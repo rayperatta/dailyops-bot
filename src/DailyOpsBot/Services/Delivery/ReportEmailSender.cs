@@ -30,6 +30,7 @@ public sealed class ReportEmailSender(
 
         if (!email.IsConfigured)
         {
+            report.EmailStatus = "demo";
             LogDemoMode(report, message);
             return;
         }
@@ -40,6 +41,8 @@ public sealed class ReportEmailSender(
         await client.AuthenticateAsync(email.User, email.Password, cancellationToken);
         await client.SendAsync(message, cancellationToken);
         await client.DisconnectAsync(quit: true, cancellationToken);
+
+        report.EmailStatus = "sent";
 
         logger.LogInformation("Report emailed to {To} via {Host}:{Port}", email.To, email.Host, email.Port);
     }

@@ -25,5 +25,11 @@ public sealed class DailyReport
     /// <summary>Paths of generated report files (Excel, PDF) — used as email attachments.</summary>
     public List<string> OutputFiles { get; } = [];
 
+    /// <summary>Wall-clock duration of the pipeline run, set by <see cref="DailyOpsBot.Services.DailyOpsRunner"/>.</summary>
+    public long DurationMs { get; set; }
+
+    /// <summary>Email delivery outcome: "sent", "demo" or "not-sent" (set by the email sender).</summary>
+    public string EmailStatus { get; set; } = "not-sent";
+
     public bool HasAnomalies => Anomalies.Count > 0;
 }

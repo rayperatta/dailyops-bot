@@ -10,6 +10,7 @@ namespace DailyOpsBot.Services.Scheduling;
 public sealed class DailyOpsJob(
     DailyOpsRunner runner,
     IReportEmailSender emailSender,
+    IRunSummaryWriter runSummaryWriter,
     ILogger<DailyOpsJob> logger) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
@@ -17,5 +18,6 @@ public sealed class DailyOpsJob(
         logger.LogInformation("Scheduled DailyOps job triggered at {Time:u}", DateTime.UtcNow);
         DailyReport report = await runner.RunOnceAsync(context.CancellationToken);
         await emailSender.SendAsync(report, context.CancellationToken);
+        runSummaryWriter.Write(report);
     }
 }

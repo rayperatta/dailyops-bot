@@ -48,7 +48,8 @@ public sealed class AnomalyDetector(
                     ? AnomalySeverity.Critical
                     : AnomalySeverity.Warning,
                 Description = $"{t.Symbol} moved {t.PriceChangePercent:+0.00;-0.00}% in 24h " +
-                              $"(threshold {threshold}%), last price {t.LastPrice:0.########}"
+                              $"(threshold {threshold}%), last price {t.LastPrice:0.########}",
+                Value = $"{t.PriceChangePercent:+0.00;-0.00}%"
             };
         }
     }
@@ -70,7 +71,8 @@ public sealed class AnomalyDetector(
             Type = AnomalyType.DuplicateSalesRows,
             Severity = extraRows > 10 ? AnomalySeverity.Critical : AnomalySeverity.Warning,
             Description = $"{duplicates.Count} duplicate group(s) found ({extraRows} redundant row(s)), " +
-                          $"e.g. {duplicates[0].Key}"
+                          $"e.g. {duplicates[0].Key}",
+            Value = $"{extraRows} rows"
         };
     }
 
@@ -93,7 +95,8 @@ public sealed class AnomalyDetector(
                 Type = AnomalyType.RevenueDrop,
                 Severity = changePercent <= -threshold * 2 ? AnomalySeverity.Critical : AnomalySeverity.Warning,
                 Description = $"Revenue dropped {changePercent:0.0}% on {current.Date:yyyy-MM-dd} " +
-                              $"({previous.Revenue:C0} → {current.Revenue:C0}, threshold {threshold}%)"
+                              $"({previous.Revenue:C0} → {current.Revenue:C0}, threshold {threshold}%)",
+                Value = $"{changePercent:0.0}%"
             };
         }
     }

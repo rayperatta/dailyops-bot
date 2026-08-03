@@ -8,6 +8,7 @@ public sealed class AppSettings
     public ReportOptions Reports { get; set; } = new();
     public EmailOptions Email { get; set; } = new();
     public SchedulerOptions Scheduler { get; set; } = new();
+    public DashboardOptions Dashboard { get; set; } = new();
 }
 
 public sealed class BinanceOptions
@@ -51,4 +52,10 @@ public sealed class SchedulerOptions
 {
     /// <summary>Quartz cron expression. Default: every day at 07:30.</summary>
     public string CronExpression { get; set; } = "0 30 7 * * ?";
+}
+
+public sealed class DashboardOptions
+{
+    /// <summary>Port used by the --serve web dashboard.</summary>
+    public int Port { get; set; } = 5080;
 }

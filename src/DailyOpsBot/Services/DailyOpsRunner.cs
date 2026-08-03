@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using DailyOpsBot.Models;
 using DailyOpsBot.Services.Reporting;
 using Microsoft.Extensions.Logging;
@@ -40,6 +41,7 @@ public sealed class DailyOpsRunner(
 {
     public async Task<DailyReport> RunOnceAsync(CancellationToken cancellationToken = default)
     {
+        var startedAt = Stopwatch.GetTimestamp();
         logger.LogInformation("=== DailyOps pipeline started at {Time:u} ===", DateTime.UtcNow);
 
         var report = new DailyReport();
@@ -62,6 +64,7 @@ public sealed class DailyOpsRunner(
         foreach (var writer in reportWriters)
             report.OutputFiles.Add(writer.Write(report));
 
+        report.DurationMs = (long)Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds;
         LogSummary(report);
         logger.LogInformation("=== DailyOps pipeline finished ===");
         return report;
