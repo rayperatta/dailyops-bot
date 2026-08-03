@@ -1,9 +1,14 @@
 using DailyOpsBot.Configuration;
 using DailyOpsBot.Services;
+using DailyOpsBot.Services.Delivery;
+using DailyOpsBot.Services.Reporting;
+using DailyOpsBot.Services.Scheduling;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Polly;
 using Polly.Extensions.Http;
+using Quartz;
 using Serilog;
 
 // Consistent formatting (currency, dates) regardless of the host locale.
@@ -14,7 +19,8 @@ System.Globalization.CultureInfo.DefaultThreadCurrentUICulture =
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
-    .WriteTo.Console(formatProvider: new System.Globalization.CultureInfo("en-US"), outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .WriteTo.Console(formatProvider: new System.Globalization.CultureInfo("en-US"),
+        outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
     .CreateBootstrapLogger();
 
 try
@@ -24,7 +30,8 @@ try
     builder.Services.AddSerilog((_, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
         .Enrich.FromLogContext()
-        .WriteTo.Console(formatProvider: new System.Globalization.CultureInfo("en-US"), outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"));
+        .WriteTo.Console(formatProvider: new System.Globalization.CultureInfo("en-US"),
+            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"));
 
     builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("DailyOps"));
 
@@ -40,10 +47,25 @@ try
 
     builder.Services.AddSingleton<ISalesDataLoader, CsvSalesDataLoader>();
     builder.Services.AddSingleton<IAnomalyDetector, AnomalyDetector>();
-    builder.Services.AddSingleton<DailyOpsBot.Services.Reporting.IReportWriter, DailyOpsBot.Services.Reporting.ExcelReportWriter>();
-    builder.Services.AddSingleton<DailyOpsBot.Services.Reporting.IReportWriter, DailyOpsBot.Services.Reporting.PdfReportWriter>();
+    builder.Services.AddSingleton<IReportWriter, ExcelReportWriter>();
+    builder.Services.AddSingleton<IReportWriter, PdfReportWriter>();
+    builder.Services.AddSingleton<IReportEmailSender, ReportEmailSender>();
     builder.Services.AddTransient<SampleDataGenerator>();
     builder.Services.AddTransient<DailyOpsRunner>();
+
+    // Quartz scheduler: one cron trigger (default 07:30 daily, configurable).
+    var cron = builder.Configuration.GetValue<string>("DailyOps:Scheduler:CronExpression")
+               ?? "0 30 7 * * ?";
+    builder.Services.AddQuartz(q =>
+    {
+        var jobKey = new JobKey("DailyOpsJob");
+        q.AddJob<DailyOpsJob>(opts => opts.WithIdentity(jobKey));
+        q.AddTrigger(opts => opts
+            .ForJob(jobKey)
+            .WithIdentity("DailyOpsJob-trigger")
+            .WithCronSchedule(cron));
+    });
+    builder.Services.AddQuartzHostedService(opts => opts.WaitForJobsToComplete = true);
 
     using var host = builder.Build();
 
@@ -53,7 +75,18 @@ try
         return 0;
     }
 
-    await host.Services.GetRequiredService<DailyOpsRunner>().RunOnceAsync();
+    if (args.Contains("--now"))
+    {
+        // Run the full pipeline once (analysis + reports + email/demo mode) and exit.
+        var report = await host.Services.GetRequiredService<DailyOpsRunner>().RunOnceAsync();
+        await host.Services.GetRequiredService<IReportEmailSender>().SendAsync(report);
+        return 0;
+    }
+
+    // Default: run as a long-lived scheduled service.
+    Log.Information("DailyOps Bot started in scheduler mode. Cron: '{Cron}'. " +
+                    "Use --now to run once immediately. Press Ctrl+C to stop.", cron);
+    await host.RunAsync();
     return 0;
 }
 catch (Exception ex)
