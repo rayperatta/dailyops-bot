@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DailyOps — Operations Dashboard</title>
+  <link rel="stylesheet" href="app.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
+</head>
+<body>
+
+  <!-- Frosted-glass top bar -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <span class="brand-name">DailyOps</span>
+      </div>
+      <div class="topbar-right">
+        <span id="last-run-label" class="last-run">No runs yet</span>
+        <span id="status-pill" class="pill pill-idle">—</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- macOS-style window card wrapping the KPIs -->
+    <section class="window-card">
+      <div class="window-chrome">
+        <span class="tl tl-red"></span>
+        <span class="tl tl-yellow"></span>
+        <span class="tl tl-green"></span>
+        <span class="window-title">Daily Pipeline — Latest Run</span>
+      </div>
+      <div class="window-body">
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="kpi-label">Rows processed</div>
+            <div class="kpi-value" id="kpi-rows">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Symbols fetched</div>
+            <div class="kpi-value" id="kpi-symbols">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Anomalies</div>
+            <div class="kpi-value" id="kpi-anomalies">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Total revenue</div>
+            <div class="kpi-value accent" id="kpi-revenue">—</div>
+          </div>
+        </div>
+        <div class="run-meta" id="run-meta"></div>
+      </div>
+    </section>
+
+    <!-- Anomalies -->
+    <section class="card">
+      <div class="card-header">
+        <h2>Anomalies</h2>
+        <span class="card-sub" id="anomalies-sub"></span>
+      </div>
+      <ul class="anomaly-list" id="anomaly-list"></ul>
+      <p class="empty-state hidden" id="anomalies-empty">All clear — no anomalies detected in the latest run.</p>
+    </section>
+
+    <!-- Reports -->
+    <section class="card">
+      <div class="card-header">
+        <h2>Reports</h2>
+        <span class="card-sub" id="email-sub"></span>
+      </div>
+      <div class="report-actions" id="report-actions"></div>
+    </section>
+
+    <!-- Run history -->
+    <section class="card">
+      <div class="card-header">
+        <h2>Run history</h2>
+        <span class="card-sub" id="history-sub"></span>
+      </div>
+      <div class="table-wrap">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Run (UTC)</th>
+              <th class="num">Rows</th>
+              <th class="num">Revenue</th>
+              <th class="num">Anomalies</th>
+              <th class="num">Duration</th>
+              <th>Email</th>
+            </tr>
+          </thead>
+          <tbody id="history-body"></tbody>
+        </table>
+        <p class="empty-state hidden" id="history-empty">No runs recorded yet.</p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      Auto-refreshes every 30s · <a href="/api/latest">latest.json</a>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

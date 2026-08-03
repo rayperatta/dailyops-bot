@@ -1,0 +1,31 @@
+{
+  "runAtUtc": "2026-08-03T17:49:18.5705608Z",
+  "durationMs": 1846,
+  "metrics": {
+    "rowsProcessed": 938,
+    "filesProcessed": 3,
+    "symbolsFetched": 10,
+    "totalRevenue": 32852.85,
+    "totalUnits": 5579,
+    "anomalyCount": 2
+  },
+  "anomalies": [
+    {
+      "type": "DuplicateSalesRows",
+      "severity": "Warning",
+      "description": "5 duplicate group(s) found (5 redundant row(s)), e.g. 2026-08-01|Cappuccino|South|10|53.70",
+      "value": "5 rows"
+    },
+    {
+      "type": "RevenueDrop",
+      "severity": "Critical",
+      "description": "Revenue dropped -67.1% on 2026-08-02 ($14,449 \u2192 $4,758, threshold 20%)",
+      "value": "-67.1%"
+    }
+  ],
+  "reports": [
+    "dailyops_2026-08-03_174918.xlsx",
+    "dailyops_summary_2026-08-03_174918.pdf"
+  ],
+  "emailStatus": "demo"
+}
