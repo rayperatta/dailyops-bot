@@ -1,4 +1,5 @@
 using DailyOpsBot.Models;
+using DailyOpsBot.Services.Reporting;
 using Microsoft.Extensions.Logging;
 
 namespace DailyOpsBot.Services;
@@ -34,6 +35,7 @@ public sealed class DailyOpsRunner(
     IBinanceClient binanceClient,
     ISalesDataLoader salesDataLoader,
     IAnomalyDetector anomalyDetector,
+    IEnumerable<IReportWriter> reportWriters,
     ILogger<DailyOpsRunner> logger)
 {
     public async Task<DailyReport> RunOnceAsync(CancellationToken cancellationToken = default)
@@ -56,6 +58,9 @@ public sealed class DailyOpsRunner(
         report.Sales = SalesAggregator.Summarize(records);
 
         report.Anomalies.AddRange(anomalyDetector.Detect(report.TopTickers, report.Sales));
+
+        foreach (var writer in reportWriters)
+            report.OutputFiles.Add(writer.Write(report));
 
         LogSummary(report);
         logger.LogInformation("=== DailyOps pipeline finished ===");

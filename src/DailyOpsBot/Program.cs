@@ -40,6 +40,8 @@ try
 
     builder.Services.AddSingleton<ISalesDataLoader, CsvSalesDataLoader>();
     builder.Services.AddSingleton<IAnomalyDetector, AnomalyDetector>();
+    builder.Services.AddSingleton<DailyOpsBot.Services.Reporting.IReportWriter, DailyOpsBot.Services.Reporting.ExcelReportWriter>();
+    builder.Services.AddSingleton<DailyOpsBot.Services.Reporting.IReportWriter, DailyOpsBot.Services.Reporting.PdfReportWriter>();
     builder.Services.AddTransient<SampleDataGenerator>();
     builder.Services.AddTransient<DailyOpsRunner>();
 

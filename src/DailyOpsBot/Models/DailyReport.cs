@@ -22,5 +22,8 @@ public sealed class DailyReport
     public SalesSummary Sales { get; set; } = new();
     public List<Anomaly> Anomalies { get; } = [];
 
+    /// <summary>Paths of generated report files (Excel, PDF) — used as email attachments.</summary>
+    public List<string> OutputFiles { get; } = [];
+
     public bool HasAnomalies => Anomalies.Count > 0;
 }

@@ -15,7 +15,8 @@ Think of it as the bot that replaces the analyst's first hour of the day.
    - Crypto price moves beyond `PriceChangeThresholdPercent` (24h).
    - Duplicate sales rows (same date/product/region/units/revenue).
    - Day-over-day revenue drops beyond `RevenueDropThresholdPercent`.
-3. **Reports** *(phase 2)* a formatted Excel workbook + a 1-page executive PDF.
+3. **Reports** a formatted Excel workbook (Summary / Anomalies / Raw Data) plus a
+   one-page executive PDF, saved to `data/output/` with timestamped filenames.
 4. **Delivers** *(phase 3)* the report by email, on a daily cron schedule.
 
 ## Architecture
@@ -37,7 +38,7 @@ Think of it as the bot that replaces the analyst's first hour of the day.
                             └────────┬────────┘
                                      ▼
                             ┌─────────────────┐
-                            │  DailyReport    │──► Excel / PDF (phase 2)
+                            │  DailyReport    │──► Excel / PDF reports
                             │  (domain model) │──► Email / Quartz (phase 3)
                             └─────────────────┘
 ```
@@ -45,7 +46,7 @@ Think of it as the bot that replaces the analyst's first hour of the day.
 ## Phase roadmap
 
 - [x] **Phase 1 — Core:** data ingestion (Binance + CSV), anomaly detection engine, Serilog logging.
-- [ ] **Phase 2 — Reporting:** Excel workbook (ClosedXML) + executive PDF (QuestPDF).
+- [x] **Phase 2 — Reporting:** Excel workbook (ClosedXML) + executive PDF (QuestPDF).
 - [ ] **Phase 3 — Delivery:** email delivery (MailKit, demo mode without credentials) + Quartz.NET daily scheduler.
 
 ## How to run
@@ -75,6 +76,17 @@ Sample console output:
 [18:18:50 WRN]   [Critical] RevenueDrop: Revenue dropped -67.1% on 2026-08-02 ...
 ```
 
+### Sample output
+
+Each run writes two timestamped files to `data/output/`:
+
+- `dailyops_YYYY-MM-DD_HHmmss.xlsx` — Excel workbook with three styled sheets:
+  - **Summary** — key metrics, revenue by day, top crypto pairs.
+  - **Anomalies** — every detected anomaly, color-coded by severity, with autofilter.
+  - **Raw Data** — all ingested sales rows, with autofilter.
+- `dailyops_summary_YYYY-MM-DD_HHmmss.pdf` — one-page executive summary
+  (title, date, key-metrics table, revenue by day, anomaly list).
+
 ## Configuration
 
 All settings live in `src/DailyOpsBot/appsettings.json` under the `DailyOps` section.
@@ -82,4 +94,4 @@ Thresholds, folders and symbols are fully configurable — no recompilation need
 
 ## Tech stack
 
-.NET 8 · Microsoft.Extensions.Hosting (DI) · Serilog · Polly (HTTP retries) · CsvHelper
+.NET 8 · Microsoft.Extensions.Hosting (DI) · Serilog · Polly (HTTP retries) · CsvHelper · ClosedXML · QuestPDF (Community license)
