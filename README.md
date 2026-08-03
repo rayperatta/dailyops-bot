@@ -1,5 +1,7 @@
 # DailyOps Bot
 
+**▶ Live dashboard demo:** [rayperatta.github.io/dailyops-bot](https://rayperatta.github.io/dailyops-bot/)
+
 An operations-report automation tool built with **.NET 8**. Every morning it fetches
 market data from a public API, processes a folder of sales CSVs, detects anomalies,
 generates an Excel report + executive PDF, and emails it — hands-free.
